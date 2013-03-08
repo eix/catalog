@@ -1,0 +1,7 @@
+language: php
+php:
+  - 5.3
+script:
+  - phpunit -c test/phpunit.xml test/php
+env:
+  - SERVER_ENV = TEST
