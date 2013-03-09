@@ -2,6 +2,6 @@ language: php
 php:
   - 5.3
 script:
-  - phpunit -c test/phpunit.xml test/php
+  - phpunit -c phpunit.xml src/php/test
 env:
-  - SERVER_ENV = TEST
+  - EIX_ENV=TEST
