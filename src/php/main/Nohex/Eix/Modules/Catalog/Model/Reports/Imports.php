@@ -10,8 +10,8 @@ class Imports extends \Nohex\Eix\Services\Data\Factory
     const COLLECTION = 'reports';
     const ENTITIES_CLASS_NAME = '\\Nohex\\Eix\\Modules\\Catalog\\Model\\Records\\Import';
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = \Nohex\Eix\Services\Data\Sources\MongoDB::getInstance(static::COLLECTION);
+        return \Nohex\Eix\Services\Data\Sources\MongoDB::getInstance(static::COLLECTION);
     }
 }

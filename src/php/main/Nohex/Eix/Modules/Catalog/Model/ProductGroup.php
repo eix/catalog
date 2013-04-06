@@ -15,9 +15,9 @@ class ProductGroup extends \Nohex\Eix\Services\Data\Entity
 
     protected $products;
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
     }
 
     protected function getFactory()

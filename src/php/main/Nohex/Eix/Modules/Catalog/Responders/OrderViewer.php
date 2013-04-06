@@ -95,7 +95,7 @@ class OrderViewer extends CollectionBrowser
             $response->setNextUrl("/comandes/{$order->id}");
         } else {
             // Validation failed.
-            $response = Application::getCurrent()::createResponse($this->getRequest());
+            $response = new HtmlResponse($this->getRequest());
             $response->addErrorMessage(array('validation' => array(
                 'security_code' => $validationErrors,
             )));

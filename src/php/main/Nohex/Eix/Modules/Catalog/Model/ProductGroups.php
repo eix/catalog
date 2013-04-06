@@ -11,9 +11,9 @@ class ProductGroups extends \Nohex\Eix\Services\Data\Factory
 {
     const ENTITIES_CLASS_NAME = '\\Nohex\\Eix\\Modules\\Catalog\\Model\\ProductGroup';
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance();
+        return DataSource::getInstance();
     }
 
 }

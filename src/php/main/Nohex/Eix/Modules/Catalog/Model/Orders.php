@@ -12,8 +12,8 @@ class Orders extends \Nohex\Eix\Services\Data\Factory
     const COLLECTION = 'orders';
     const ENTITIES_CLASS_NAME = '\\Nohex\\Eix\\Modules\\Catalog\\Model\\Order';
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
     }
 }

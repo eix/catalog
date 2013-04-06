@@ -4,13 +4,14 @@ namespace Nohex\Eix\Modules\Catalog\Model;
 
 use Nohex\Eix\Modules\Catalog\Model\Product;
 use Nohex\Eix\Modules\Catalog\Model\Products;
+use Nohex\Eix\Services\Data\Subentity;
 use Nohex\Eix\Services\Log\Logger;
 
 /**
  * Representation of a user's product basket. Since a basket only exists as
  * customers assets, they are implemented as subentities.
  */
-class Basket extends \Nohex\Eix\Services\Data\Subentity
+class Basket extends Subentity
 {
     protected $products = array();
 

@@ -19,6 +19,7 @@ class Product extends \Nohex\Eix\Services\Data\Entity
     protected $enabled = TRUE;
     protected $featured = FALSE;
     protected $groups = array();
+    protected $pricePerKg;
 
     public function update(array $data, $isAtomic = TRUE)
     {
@@ -43,11 +44,14 @@ class Product extends \Nohex\Eix\Services\Data\Entity
                 $this->groups[$group->id] = $group;
             }
         }
+
+        // Invalidate calculated fields.
+        $this->pricePerKg = null;
     }
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
     }
 
     protected function getFactory()
@@ -174,5 +178,22 @@ class Product extends \Nohex\Eix\Services\Data\Entity
             96,
             140,
         );
+    }
+
+    /**
+     * Calculates this product's price per Kg.
+     */
+    public function getPricePerKg()
+    {
+        if (empty($this->pricePerKg)) {
+            // If there is no weight or price, the value is unknown.
+            if (($this->weight > 0) & ($this->price > 0)) {
+                $this->pricePerKg = $this->price / $this->weight;
+            } else {
+                $this->pricePerKg = '—';
+            }
+        }
+
+        return $this->pricePerKg;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
-use Nohex\Eix\Core\Application;
+use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 use Nohex\Eix\Modules\Catalog\Model\Customers;
 use Nohex\Eix\Modules\Catalog\Model\Products;
 use Nohex\Eix\Modules\Catalog\Model\Order;
@@ -97,9 +97,9 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
      */
     private function getHtmlResponse($templateId)
     {
-        $response = Application::getCurrent()::createResponse($this->getRequest());
+        $response = new HtmlResponse($this->getRequest());
         $response->setTemplateId($templateId);
-        $response->appendToTitle(_('Cistella'));
+        $response->appendToTitle(_('Basket'));
 
         return $response;
     }

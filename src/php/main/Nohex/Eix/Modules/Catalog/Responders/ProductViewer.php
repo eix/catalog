@@ -43,6 +43,7 @@ class ProductViewer extends HttpResponder
                     $response->setTemplateId('products/index');
                     $response->setData('products', $productList);
                 }
+
                 $response->appendToTitle(_('Productes'));
                 break;
             default:
@@ -63,7 +64,7 @@ class ProductViewer extends HttpResponder
     /**
      * Get a list of all enabled products.
      */
-    protected function getProductList($groupId = NULL, $includeDisabled = FALSE)
+    public function getProductList($groupId = NULL, $includeDisabled = FALSE)
     {
         $options = array();
         // If disabled products are not meant to be included, include just the

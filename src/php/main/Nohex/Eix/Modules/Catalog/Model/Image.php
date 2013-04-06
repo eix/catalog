@@ -93,9 +93,9 @@ abstract class Image extends \Nohex\Eix\Services\Data\Entity
         }
     }
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
     }
 
     protected function getFields()

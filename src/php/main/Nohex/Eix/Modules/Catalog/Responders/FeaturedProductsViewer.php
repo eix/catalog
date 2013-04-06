@@ -16,7 +16,7 @@ class FeaturedProductsViewer extends ProductViewer
      */
     protected function httpGetForHtml()
     {
-        $response = Application::getCurrent()::createResponse($this->getRequest());
+        $response = new HtmlResponse($this->getRequest());
 
         $productList = $this->getFeaturedProductsList();
         if (empty($productList)) {

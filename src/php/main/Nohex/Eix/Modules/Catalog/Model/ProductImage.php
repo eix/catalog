@@ -11,9 +11,9 @@ class ProductImage extends \Nohex\Eix\Modules\Catalog\Model\Image
 {
     const COLLECTION = 'products';
 
-    protected function assignDataSource()
+    protected function getDefaultDataSource()
     {
-        $this->dataSource = DataSource::getInstance(static::COLLECTION);
+        return DataSource::getInstance(static::COLLECTION);
         // Set alternative image sizes.
         $this->dataSource->setAlternativeImageSizes(array(
             32,
