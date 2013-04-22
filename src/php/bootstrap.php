@@ -8,7 +8,7 @@
 // Get the class loader.
 $classLoader = null;
 if (!class_exists('\\Nohex\\Eix\\Core\\ClassLoader')) {
-	require_once __DIR__ . '/lib/nohex-eix-0.2.0.phar';
+    require_once __DIR__ . '/lib/nohex-eix-0.2.0.phar';
 }
 $classLoader = \Nohex\Eix\Core\ClassLoader::getInstance();
 // Add the main source folder to the include path.
