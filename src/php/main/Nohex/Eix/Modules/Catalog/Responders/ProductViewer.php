@@ -6,6 +6,7 @@ use Nohex\Eix\Core\Responders\Http as HttpResponder;
 use Nohex\Eix\Modules\Catalog\Model\Products;
 use Nohex\Eix\Modules\Catalog\Model\ProductGroups;
 use Nohex\Eix\Modules\Catalog\Responses\Html as HtmlResponse;
+use Nohex\Eix\Services\Data\Factory;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
 
 /**
@@ -13,6 +14,8 @@ use Nohex\Eix\Services\Net\Http\NotFoundException;
  */
 class ProductViewer extends HttpResponder
 {
+    private static $factory;
+
     public function httpGetForAll()
     {
         return $this->httpGetForHtml();
@@ -77,26 +80,21 @@ class ProductViewer extends HttpResponder
             // products are being saved, this is the working form.
             $options["groups.{$groupId}._id"] = $groupId;
         }
-        $products = Products::getInstance()->getAll($options);
+        $products = self::getFactory()->getAll($options);
 
         $productList = array();
         if (!empty($products)) {
             $productList = array();
             foreach ($products as $product) {
                 if (!$groupId || @$product->groups[$groupId]) {
+                    $displayProduct = $product->getForDisplay();
                     // Truncate the description if it is too long.
-                    $description = $product->description;
+                    $description = $displayProduct['description'];
                     if (strlen($description) > 150) {
-                        $description = substr($description, 0, 147) . '...';
+                        $displayProduct['description'] = substr($description, 0, 147) . '...';
                     }
-                    $productList[] = array(
-                        'id' => $product->id,
-                        'name' => $product->name,
-                        'description' => $description,
-                        'price' => $product->price,
-                        'weight' => $product->weight,
-                        'enabled' => $product->enabled,
-                    );
+                    // Add all the products's displayable fields to the list.
+                    $productList[] = $displayProduct;
                 }
             }
 
@@ -110,14 +108,38 @@ class ProductViewer extends HttpResponder
      */
     protected function getProduct($id)
     {
-        $product = Products::getInstance()->findEntity($id);
-        $productData = $product->getFieldsData();
+        return self::getFactory()->findEntity($id)->getForDisplay();
+    }
 
-        // Add the price per kg.
-        $productData['price_per_kg'] = sprintf('%1.2f',
-            $product->price / $product->weight
-        );
+    /**
+     * Get the default entity factory for that responder.
+     *
+     * @return Nohex\Eix\Services\Data\Factory
+     */
+    private static function getDefaultFactory()
+    {
+        return Products::getInstance();
+    }
 
-        return $productData;
+    /**
+     * Get the factory that provides this responder with entities.
+     */
+    public static function getFactory()
+    {
+        if (empty(self::$factory)) {
+            self::$factory = self::getDefaultFactory();
+        }
+
+        return self::$factory;
+    }
+
+    /**
+     * Set the factory that will provide this responder with entities.
+     *
+     * @param Nohex\Eix\Services\Data\Factory the entity factory to use.
+     */
+    public static function setFactory(Factory $factory)
+    {
+        self::$factory = $factory;
     }
 }

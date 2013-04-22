@@ -59,6 +59,7 @@ class FeaturedProductsViewer extends ProductViewer
                     'description' => $description,
                     'price' => $product->price,
                     'weight' => $product->weight,
+                    'price_kg' => $product->getPricePerKg(),
                     'enabled' => $product->enabled,
                 );
             }

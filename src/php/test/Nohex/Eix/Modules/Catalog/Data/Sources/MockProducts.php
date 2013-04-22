@@ -6,6 +6,12 @@ use Nohex\Eix\Services\Data\Source as DataSource;
 
 class MockProducts implements DataSource
 {
+    private $products = array(
+        'AUB01' => array(
+            'id' => 'AUB01',
+        ),
+    );
+
     public function create(array $data)
     {
         throw new \LogicException('Not implemented!');
@@ -13,16 +19,12 @@ class MockProducts implements DataSource
 
     public function retrieve($id)
     {
-        throw new \LogicException('Not implemented!');
+        return $this->products[$id];
     }
 
     public function retrieveAll(array $filter = null, array $fields = null)
     {
-        return array(
-            array(
-                'id' => 'AUB01',
-            ),
-        );
+        return $this->products;
     }
 
     public function update($id, array $data)

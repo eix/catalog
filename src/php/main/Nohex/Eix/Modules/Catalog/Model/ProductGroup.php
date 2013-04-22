@@ -2,12 +2,13 @@
 
 namespace Nohex\Eix\Modules\Catalog\Model;
 
+use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
 
 /**
  * Representation of a product.
  */
-class ProductGroup extends \Nohex\Eix\Services\Data\Entity
+class ProductGroup extends Entity
 {
     const COLLECTION = 'products';
 
@@ -38,6 +39,14 @@ class ProductGroup extends \Nohex\Eix\Services\Data\Entity
         return array(
             'id' => array('NonEmpty'),
             'name' => array('NonEmpty'),
+        );
+    }
+
+    public function getForDisplay()
+    {
+        return array(
+            'id' => $this->id,
+            'name' => $this->name,
         );
     }
 

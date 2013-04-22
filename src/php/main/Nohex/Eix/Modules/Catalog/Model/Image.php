@@ -2,6 +2,7 @@
 
 namespace Nohex\Eix\Modules\Catalog\Model;
 
+use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\ImageStore as DataSource;
 use Nohex\Eix\Services\Log\Logger;
 
@@ -12,7 +13,7 @@ use Nohex\Eix\Services\Log\Logger;
  * data to be kept in memory at any time. Instead, the image should be retrieved
  * only when needed.
  */
-abstract class Image extends \Nohex\Eix\Services\Data\Entity
+abstract class Image extends Entity
 {
     const COLLECTION = 'images';
     const IMAGE_SIZE = 140;
@@ -111,6 +112,11 @@ abstract class Image extends \Nohex\Eix\Services\Data\Entity
         return array(
             'id' => array('NonEmpty'),
         );
+    }
+
+    public function getForDisplay()
+    {
+        throw new \LogicException('This entity does not display data.');
     }
 
     private static function getNewLocation()

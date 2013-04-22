@@ -14,10 +14,13 @@ use Nohex\Eix\Services\Log\Logger;
 class Basket extends Subentity
 {
     protected $products = array();
+    protected $forDisplay = array();
 
     private $contents = array();
     private $price = 0;
-    private $weight = 0;
+    // Weight is not zeroed to tell apart empty baskets from ones with products
+    // which have no weight member.
+    private $weight = null;
 
     protected function getFields()
     {
@@ -38,6 +41,19 @@ class Basket extends Subentity
     public function getFieldsData()
     {
         return $this->products;
+    }
+
+    public function getForDisplay()
+    {
+        if (empty($this->forDisplay)) {
+            // Get the products' displayable data.
+            $this->forDisplay = array('products' => array());
+            foreach ($this->products as $product) {
+                $this->forDisplay['products'][] = $product->getForDisplay();
+            }
+        }
+
+        return $this->forDisplay;
     }
 
     /**
@@ -61,9 +77,11 @@ class Basket extends Subentity
         // Update total price.
         $this->price += $product->price * $count;
         // Update total weight.
-        $this->weight += $product->weight * $count;
-        // Invalidate contents cache.
-        $this->contents = NULL;
+        if (property_exists($product, 'weight')) {
+            $this->weight += $product->weight * $count;
+        }
+
+        $this->invalidateCalculatedFields();
 
         Logger::get()->debug('Added');
     }
@@ -89,9 +107,11 @@ class Basket extends Subentity
             // Update total price.
             $this->price -= $product->price;
             // Update total weight.
-            $this->weight -= $product->weight;
-            // Invalidate contents cache.
-            $this->contents = NULL;
+            if (property_exists($product, 'weight')) {
+                $this->weight -= $product->weight;
+            }
+
+            $this->invalidateCalculatedFields();
 
             Logger::get()->debug('Removed');
         }
@@ -104,9 +124,10 @@ class Basket extends Subentity
     {
         $this->products = array();
         $this->price = 0;
-        $this->weight = 0;
-        // Invalidate contents cache.
-        $this->contents = NULL;
+        // Weight is not zeroed, see member declaration.
+        $this->weight = null;
+
+        $this->invalidateCalculatedFields();
     }
 
     /**
@@ -131,8 +152,8 @@ class Basket extends Subentity
         foreach ($products as $product) {
             $this->add($product);
         }
-        // Invalidate contents cache.
-        $this->contents = NULL;
+
+        $this->invalidateCalculatedFields();
     }
 
     /**
@@ -153,11 +174,22 @@ class Basket extends Subentity
                 // Inject the product metadata in the entity.
                 $this->contents[$id]['count'] = $count;
                 $this->contents[$id]['totalPrice'] = $product->price * $count;
-                $this->contents[$id]['totalWeight'] = $product->weight * $count;
+                if (property_exists($product, 'weight')) {
+                    $this->contents[$id]['totalWeight'] = $product->weight * $count;
+                }
             }
         }
 
         return $this->contents;
+    }
+
+    /**
+     * Clear fields that depend on variable data such as the product list.
+     */
+    public function invalidateCalculatedFields()
+    {
+        $this->contents = null;
+        $this->displayData = null;
     }
 
     /**

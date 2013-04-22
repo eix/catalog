@@ -5,13 +5,14 @@ namespace Nohex\Eix\Modules\Catalog\Model;
 use Nohex\Eix\Modules\Catalog\Model\Basket;
 use Nohex\Eix\Modules\Catalog\Model\Customer;
 use Nohex\Eix\Modules\Catalog\Model\Orders;
+use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
 
 /**
  * An order is created when customers request to buy the contents of their
  * baskets.
  */
-class Order extends \Nohex\Eix\Services\Data\Entity
+class Order extends Entity
 {
     const COLLECTION = 'orders';
 
@@ -129,6 +130,20 @@ class Order extends \Nohex\Eix\Services\Data\Entity
 
         return $fieldsData;
     }
+
+    public function getForDisplay()
+    {
+        return array(
+            'id' => $this->id,
+            'customer' => $this->customer->getForDisplay(),
+            'price' => $this->price,
+            'weight' => $this->weight,
+            'statusHistory' => $this->getStatusHistory(),
+            'comments' => $this->comments,
+            'vendorComments' => $this->vendorComments,
+        );
+    }
+
 
     protected function getFieldValidators()
     {

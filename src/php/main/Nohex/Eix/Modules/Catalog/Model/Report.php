@@ -2,12 +2,13 @@
 
 namespace Nohex\Eix\Modules\Catalog\Model;
 
+use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
 
 /**
  * Keeps a record of an event.
  */
-class Report extends \Nohex\Eix\Services\Data\Entity
+class Report extends Entity
 {
     const COLLECTION = 'reports';
     const TYPE_IMPORT = 'import';
@@ -40,6 +41,15 @@ class Report extends \Nohex\Eix\Services\Data\Entity
             'id' => array('NonEmpty'),
             'type' => array('NonEmpty'),
             'details' => array('NonEmpty'),
+        );
+    }
+
+    public function getForDisplay()
+    {
+        return array(
+            'id' => $this->id,
+            'type' => $this->type,
+            'details' => $this->details,
         );
     }
 

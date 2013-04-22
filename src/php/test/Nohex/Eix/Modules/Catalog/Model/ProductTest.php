@@ -55,11 +55,4 @@ class ProductTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($productGroups[0]->getId() == $groups[0]->getId());
         $this->assertTrue($productGroups[1]->getId() == $groups[1]->getId());
     }
-
-    public function testPricePerKg()
-    {
-        $product = new Product($this->productData);
-
-        $this->assertEquals($product->getPricePerKg(), 5);
-    }
 }

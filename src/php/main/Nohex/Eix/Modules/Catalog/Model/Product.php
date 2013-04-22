@@ -2,24 +2,22 @@
 
 namespace Nohex\Eix\Modules\Catalog\Model;
 
+use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
 
 /**
  * Representation of a product.
  */
-class Product extends \Nohex\Eix\Services\Data\Entity
+class Product extends Entity
 {
     const COLLECTION = 'products';
 
     protected $name;
     protected $description;
     protected $price;
-    protected $weight;
-    protected $presentation;
     protected $enabled = TRUE;
     protected $featured = FALSE;
     protected $groups = array();
-    protected $pricePerKg;
 
     public function update(array $data, $isAtomic = TRUE)
     {
@@ -68,9 +66,18 @@ class Product extends \Nohex\Eix\Services\Data\Entity
             'enabled',
             'featured',
             'price',
-            'weight',
-            'presentation',
             'groups',
+        );
+    }
+
+    public function getForDisplay()
+    {
+        return array(
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'price' => $this->price,
+            'enabled' => $this->enabled,
         );
     }
 
@@ -81,8 +88,6 @@ class Product extends \Nohex\Eix\Services\Data\Entity
             'name' => array('NonEmpty'),
             'description' => array('NonEmpty'),
             'price' => array('NonEmpty', 'Number'),
-            'weight' => array('NonEmpty', 'Number'),
-            'presentation' => array('NonEmpty'),
         );
     }
 
@@ -178,22 +183,5 @@ class Product extends \Nohex\Eix\Services\Data\Entity
             96,
             140,
         );
-    }
-
-    /**
-     * Calculates this product's price per Kg.
-     */
-    public function getPricePerKg()
-    {
-        if (empty($this->pricePerKg)) {
-            // If there is no weight or price, the value is unknown.
-            if (($this->weight > 0) & ($this->price > 0)) {
-                $this->pricePerKg = $this->price / $this->weight;
-            } else {
-                $this->pricePerKg = '—';
-            }
-        }
-
-        return $this->pricePerKg;
     }
 }
