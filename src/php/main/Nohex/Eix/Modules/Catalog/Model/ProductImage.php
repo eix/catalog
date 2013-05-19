@@ -3,11 +3,11 @@
 namespace Nohex\Eix\Modules\Catalog\Model;
 
 use Nohex\Eix\Services\Data\Sources\ImageStore as DataSource;
-
+use Nohex\Eix\Modules\Catalog\Model\Image;
 /**
  * Representation of an image associated with a product.
  */
-class ProductImage extends \Nohex\Eix\Modules\Catalog\Model\Image
+class ProductImage extends Image
 {
     const COLLECTION = 'products';
 

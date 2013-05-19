@@ -3,14 +3,16 @@
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
 use Nohex\Eix\Core\Request;
+use Nohex\Eix\Modules\Catalog\Model\Product;
+use Nohex\Eix\Modules\Catalog\Model\ProductGroups;
+use Nohex\Eix\Modules\Catalog\Model\ProductImage;
+use Nohex\Eix\Modules\Catalog\Model\Products;
+use Nohex\Eix\Modules\Catalog\Model\Report;
+use Nohex\Eix\Modules\Catalog\Responses\Order as HtmlResponse;
 use Nohex\Eix\Services\Data\Responders\CollectionManager;
 use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
-use Nohex\Eix\Modules\Catalog\Model\Report;
-use Nohex\Eix\Modules\Catalog\Model\Product;
-use Nohex\Eix\Modules\Catalog\Model\Products;
-use Nohex\Eix\Modules\Catalog\Model\ProductGroups;
-use Nohex\Eix\Modules\Catalog\Responses\Order as HtmlResponse;
+use Nohex\Eix\Services\Net\Http\BadRequestException;
 
 /**
  * Manages a product list.
@@ -470,7 +472,7 @@ class ProductManager extends CollectionManager
                                 $imageHandle = @fopen($imageUrl, 'r');
                                 if ($imageHandle) {
                                     // Store image.
-                                    $image = new \Nohex\Eix\Modules\Catalog\Model\ProductImage(array(
+                                    $image = new ProductImage(array(
                                         'id' => $id,
                                         'source' => $imageHandle,
                                     ));
@@ -504,7 +506,7 @@ class ProductManager extends CollectionManager
             // Return the import log ID.
             return $importRecord->getId();
         } else {
-            throw new \Nohex\Eix\Services\Net\Http\BadRequestException('Uploaded file cannot be used: ' . $fileName);
+            throw new BadRequestException('Uploaded file cannot be used: ' . $fileName);
         }
     }
 
@@ -513,7 +515,7 @@ class ProductManager extends CollectionManager
      */
     private function getGroups()
     {
-        $productGroups = \Nohex\Eix\Modules\Catalog\Model\ProductGroups::getInstance()->getAll();
+        $productGroups = ProductGroups::getInstance()->getAll();
 
         return array_map(function ($group) {
             return $group->getFieldsData();
@@ -561,7 +563,7 @@ class ProductManager extends CollectionManager
     private function storeImage($id, $location)
     {
         if ($location && is_readable($location)) {
-            $image = new \Nohex\Eix\Modules\Catalog\Model\ProductImage(array(
+            $image = new ProductImage(array(
                 'id' => $id,
                 'location' => $location,
             ));

@@ -2,18 +2,19 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responses;
 
-use Nohex\Eix\Modules\Catalog\Model\Order;
+use Nohex\Eix\Modules\Catalog\Model\Order as OrderModel;
+use Nohex\Eix\Modules\Catalog\Responses\Html as HtmlResponse;
 
 /**
  * Provides a response tailored to the order view.
  */
-class Order extends \Nohex\Eix\Modules\Catalog\Responses\Html
+class Order extends HtmlResponse
 {
     public function issue()
     {
         // Load the statuses map into the response.
         $this->addData('orders', array(
-            'statuses' => Order::getStatuses()
+            'statuses' => OrderModel::getStatuses()
         ));
 
         parent::issue();

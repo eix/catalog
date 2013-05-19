@@ -4,11 +4,12 @@ namespace Nohex\Eix\Modules\Catalog\Model;
 
 use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
+use Nohex\Eix\Core\User;
 
 /**
  * Representation of a user who can interact with the products.
  */
-class Customer extends \Nohex\Eix\Core\User
+class Customer extends User
 {
     protected $basket;
     protected $name;
