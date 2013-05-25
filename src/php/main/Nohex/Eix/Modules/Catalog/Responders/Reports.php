@@ -2,16 +2,18 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
+use Nohex\Eix\Core\Responders\Http\Page;
+use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 use Nohex\Eix\Modules\Catalog\Model\Reports as ReportsFactory;
 
 /**
  * Responder for reporting-related requests.
  */
-class Reports extends \Nohex\Eix\Core\Responders\Http\Page
+class Reports extends Page
 {
     public function httpGetForHtml()
     {
-        $this->response = new \Nohex\Eix\Core\Responses\Http\Html($this->getRequest());
+        $this->response = new HtmlResponse($this->getRequest());
 
         $id = $this->getRequest()->getParameter('id');
         if ($id) {
@@ -41,5 +43,4 @@ class Reports extends \Nohex\Eix\Core\Responders\Http\Page
 
         return parent::httpGetForHtml();
     }
-
 }

@@ -19,9 +19,9 @@ abstract class Image extends Entity
     const IMAGE_SIZE = 140;
 
     protected $location;
-    // Stores whether the path in $location points to a temporary file. TRUE if
+    // Stores whether the path in $location points to a temporary file. true if
     // the file is temporary, FALSE if the file is the stored resource.
-    private $isLocationTemporary = TRUE;
+    private $isLocationTemporary = true;
 
     /**
      * @param array $data there needs to be an 'id' parameter and either a
@@ -31,7 +31,7 @@ abstract class Image extends Entity
      * a temporary file, a URL, or a string with the image binary content.
      * @throws \RuntimeException
      */
-    public function __construct(array $data, $isNew = TRUE)
+    public function __construct(array $data, $isNew = true)
     {
         if (empty($data['id'])) {
             throw new \RuntimeException(

@@ -36,7 +36,7 @@ class Order extends Entity
     protected $securityCode;
     protected $statusHistory = array();
 
-    public function __construct(array $data, $isNew = TRUE)
+    public function __construct(array $data, $isNew = true)
     {
         // Set the correspondence between status codes and IDs.
         self::$statuses = array(
@@ -80,7 +80,7 @@ class Order extends Entity
         return Orders::getInstance();
     }
 
-    public function update(array $data, $isAtomic = TRUE)
+    public function update(array $data, $isAtomic = true)
     {
         // Create a security code if none is present.
         if (empty($data['securityCode']) && empty($this->securityCode)) {

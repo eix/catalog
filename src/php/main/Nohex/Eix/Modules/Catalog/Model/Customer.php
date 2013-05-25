@@ -18,7 +18,7 @@ class Customer extends User
 
     private $entityFields;
 
-    public function __construct(array $data, $isNew = TRUE)
+    public function __construct(array $data, $isNew = true)
     {
         // Give the customer a basket.
         $this->basket = new Basket(array());
@@ -26,7 +26,7 @@ class Customer extends User
         parent::__construct($data, $isNew);
     }
 
-    public function update(array $data, $isAtomic = TRUE)
+    public function update(array $data, $isAtomic = true)
     {
         // If basket data is present, create a Basket object.
         if (

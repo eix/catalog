@@ -15,11 +15,11 @@ class Product extends Entity
     protected $name;
     protected $description;
     protected $price;
-    protected $enabled = TRUE;
+    protected $enabled = true;
     protected $featured = FALSE;
     protected $groups = array();
 
-    public function update(array $data, $isAtomic = TRUE)
+    public function update(array $data, $isAtomic = true)
     {
         parent::update($data, $isAtomic);
 
@@ -146,7 +146,7 @@ class Product extends Entity
      */
     public function enable()
     {
-        $this->enabled = TRUE;
+        $this->enabled = true;
     }
 
     /**
@@ -162,7 +162,7 @@ class Product extends Entity
      */
     public function promote()
     {
-        $this->featured = TRUE;
+        $this->featured = true;
     }
 
     /**
