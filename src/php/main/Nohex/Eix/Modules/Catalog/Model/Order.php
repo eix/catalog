@@ -2,11 +2,12 @@
 
 namespace Nohex\Eix\Modules\Catalog\Model;
 
-use Nohex\Eix\Modules\Catalog\Model\Basket;
+use Nohex\Eix\Core\Application;
 use Nohex\Eix\Modules\Catalog\Model\Customer;
 use Nohex\Eix\Modules\Catalog\Model\Orders;
 use Nohex\Eix\Services\Data\Entity;
 use Nohex\Eix\Services\Data\Sources\MongoDB as DataSource;
+use Nohex\Eix\Services\Net\Mail\Message as MailMessage;
 
 /**
  * An order is created when customers request to buy the contents of their
@@ -178,16 +179,17 @@ class Order extends Entity
     public function sendConfirmationRequestMessage()
     {
         $basketContents = join("\n", array_map(function ($item) {
-            return utf8_decode(sprintf('- %d × %s',
+            return sprintf('- %d × %s',
                     $item['count'],
                     $item['name']
-            ));
+            );
         }, $this->getBasket()->getContents()));
 
         $this->sendMessage(
             $this->getCustomer()->email,
             'orderConfirmation',
             array(
+                'name' => $this->getCustomer()->name,
                 'basketContents' => $basketContents,
                 'basketPrice' => sprintf('%1.2f', $this->getBasket()->getPrice()),
                 'orderId' => $this->id,
@@ -225,7 +227,7 @@ class Order extends Entity
         if (!is_readable($messageFile)) {
             throw new \Exception('No template found for the message.');
         }
-
+        
         $message = str_replace(
             array_map(function ($item) {
                 return '{{' . $item . '}}';
@@ -234,7 +236,7 @@ class Order extends Entity
             file_get_contents($messageFile)
         );
 
-        $mailMessage = new \Nohex\Eix\Services\Net\Mail\Message;
+        $mailMessage = new MailMessage;
         $mailMessage->setSender(
             $mailSettings->sender->address,
             $mailSettings->sender->name
@@ -251,7 +253,7 @@ class Order extends Entity
      */
     public function notifyVendor()
     {
-        $mailSettings = \Nohex\Eix\Core\Application::getSettings()->mail;
+        $mailSettings = Application::getSettings()->mail;
         $messageFile = @$mailSettings->templates->orderStatus;
         if (!is_readable($messageFile)) {
             throw new \Exception('No template found for the vendor notification.');
@@ -262,7 +264,7 @@ class Order extends Entity
             self::$statuses[$this->getStatus()]
         );
 
-        $mailMessage = new \Nohex\Eix\Services\Net\Mail\Message;
+        $mailMessage = new MailMessage;
         $mailMessage->setSender(
             $mailSettings->sender->address,
             $mailSettings->sender->name
