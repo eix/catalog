@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project default="build">
 	<!-- Phing build script for libraries -->
+	
+	<fail unless="env.EIX_WORKSPACE" msg="The Eix workspace environment variable is not set." />
 
 	<!-- Set common properties -->
-	<property name="repository" value="/mnt/workspace/nohex-repository" />
+	<property name="repository" value="${env.EIX_WORKSPACE}/nohex-repository" />
 	<property name="srcDir" value="src/php" />
 	<property name="mainSrcDir" value="${srcDir}/main" />
 	<property name="testDir" value="${srcDir}/test" />
@@ -67,7 +69,10 @@
 		depends="getlibs"
 	>
 		<mkdir dir="${reportsDir}" />
-
+		<phplint haltonfailure="true">
+			<fileset refid="main" />
+			<fileset refid="devel" />
+		</phplint>
 <!--
 		<phpcodesniffer
 			standard="PSR2"
@@ -139,7 +144,7 @@
 		description="Prepare the build environment"
 	>
 		<!-- Ensure the build folder is clean -->
-		<delete dir="${buildDir}" />
+		<delete dir="${buildDir}" quiet="true" />
 		<!-- Ensure the build folder exists -->
 		<mkdir dir="${buildDir}" />
 	</target>
@@ -166,7 +171,7 @@
 
 		<!-- Prepare main target folder. -->
 		<property name="targetDir" value="${targetsDir}/${type}" />
-		<delete dir="${targetDir}" />
+		<delete dir="${targetDir}" quiet="true" />
 		<mkdir dir="${targetDir}" />
 		<copy todir="${targetDir}">
 			<fileset refid="bootstrap" />
