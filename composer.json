@@ -1,0 +1,35 @@
+{
+    "name": "nohex/catalog_eixtension",
+    "description": "Eix extension that allows management of a catalog of products.",
+    "version": "0.3-dev",
+    "type": "library",
+    "keywords": ["catalog", "e-commerce", "products"],
+    "homepage": "http://eix.nohex.com/eixtensions/catalog",
+    "time": "2013-01-01",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Max Noé",
+            "email": "max@nohex.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/nohex/catalog_eixtension",
+        "source": "https://github.com/nohex/catalog_eixtension"
+    },
+    "require": {
+        "nohex/eix": ">=0.3",
+        "nohex/contact_eixtension": ">=0.3"
+    },
+    "autoload": {
+        "psr-0": {
+            "Nohex\\Eix": [
+				"src/php/main",
+				"src/php/lib",
+				"src/php/test"
+			]
+        }
+    },
+    "prefer-stable": true
+}
