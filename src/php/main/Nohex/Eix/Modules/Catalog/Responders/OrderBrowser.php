@@ -7,30 +7,16 @@ use Nohex\Eix\Services\Data\Responders\CollectionBrowser;
 use Nohex\Eix\Modules\Catalog\Model\Orders;
 use Nohex\Eix\Modules\Catalog\Model\Order;
 
-class OrderViewer extends CollectionBrowser
+class OrderBrowser extends CollectionBrowser
 {
-    const COLLECTION_NAME = 'orders';
-    const ITEM_NAME = 'order';
-
     public function getCollectionName()
     {
-        return static::COLLECTION_NAME;
+        return 'orders';
     }
 
     public function getItemName()
     {
-        return static::ITEM_NAME;
-    }
-
-    public function httpGetForHtml()
-    {
-        $response = parent::httpGetForHtml();
-
-        // The list viewer returns an edition page by default, the orders only
-        // need to show a view page.
-        $response->setTemplateId('orders/view');
-
-        return $response;
+        return 'order';
     }
 
     /**
@@ -87,7 +73,7 @@ class OrderViewer extends CollectionBrowser
         // If the validation status is empty, everything looks ok.
         if (empty($validationErrors)) {
             // Set the status and notify the vendor.
-            $order->setStatus(Order::STATUS_CONFIRMED_BY_CUSTOMER, TRUE);
+            $order->setStatus(Order::STATUS_CONFIRMED_BY_CUSTOMER, true);
             // Store the order with the new status.
             $order->store();
             // Display the order's new status.
@@ -141,6 +127,7 @@ class OrderViewer extends CollectionBrowser
             foreach ($orders as $order) {
                 $entities[] = array(
                     'id' => $order->id,
+                    'customer' => $order->getCustomer(),
                     'lastUpdatedOn' => $order->lastUpdatedOn,
                     'status' => $order->status,
                 );
@@ -149,5 +136,10 @@ class OrderViewer extends CollectionBrowser
         }
 
         return $entities;
+    }
+
+    public function getDefaultFactory()
+    {
+        return Orders::getInstance();
     }
 }

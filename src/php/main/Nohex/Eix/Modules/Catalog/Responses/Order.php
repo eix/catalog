@@ -14,7 +14,7 @@ class Order extends HtmlResponse
     {
         // Load the statuses map into the response.
         $this->addData('orders', array(
-            'statuses' => OrderModel::getStatuses()
+            'statuses' => OrderModel::getStatusLabels()
         ));
 
         parent::issue();

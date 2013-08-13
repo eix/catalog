@@ -8,63 +8,26 @@ use Nohex\Eix\Modules\Catalog\Model\ProductGroups;
 use Nohex\Eix\Modules\Catalog\Model\ProductImage;
 use Nohex\Eix\Modules\Catalog\Model\Products;
 use Nohex\Eix\Modules\Catalog\Model\Report;
-use Nohex\Eix\Modules\Catalog\Responses\Order as HtmlResponse;
 use Nohex\Eix\Services\Data\Responders\CollectionManager;
 use Nohex\Eix\Services\Log\Logger;
-use Nohex\Eix\Services\Net\Http\NotFoundException;
 use Nohex\Eix\Services\Net\Http\BadRequestException;
+use Nohex\Eix\Services\Net\Http\NotFoundException;
 
 /**
  * Manages a product list.
  */
 class ProductManager extends CollectionManager
 {
-    const COLLECTION_NAME = 'products';
-    const ITEM_NAME = 'product';
-    const ITEM_CLASS = '\\Nohex\\Eix\\Modules\\Catalog\\Model\\Product';
-
-    public function getCollectionName()
+    public function __construct(Request $request)
     {
-        return static::COLLECTION_NAME;
-    }
+        parent::__construct($request);
 
-    public function getItemName()
-    {
-        return static::ITEM_NAME;
-    }
-
-    protected function getHtmlResponse(Request $request)
-    {
-        return new HtmlResponse($request);
+        $this->setCollectionBrowser(new ProductBrowser($request));
     }
 
     protected function getEntityClass()
     {
         return new ReflectionClass(static::ITEM_CLASS);
-    }
-
-    /**
-     * Get a product.
-     */
-    protected function getEntity($id)
-    {
-        // Fetch the product from the ID.
-        $product = Products::getInstance()->findEntity($id);
-
-        return $product;
-    }
-
-    /**
-     * Get a list of the selected products.
-     */
-    protected function getEntities($view = NULL)
-    {
-        return Products::getInstance()->getAll();
-    }
-
-    protected function destroyEntity($id)
-    {
-        Products::getInstance()->findEntity($id)->destroy();
     }
 
     /**
@@ -523,35 +486,30 @@ class ProductManager extends CollectionManager
     }
 
     /**
-     * Stores the product-related data in the request.
+     * Stores an eventual product image.
+     *
+     * @return Entity
      */
     protected function storeEntity()
     {
-        $request = $this->getRequest();
-        $id = $request->getParameter('id');
-        // Find the product.
-        $product = NULL;
-        try {
-            $product = Products::getInstance()->findEntity($id);
-        } catch (NotFoundException $exception) {
-            // Not found? Create it.
-            $product = new Product(array(
-                'id' => $id,
-            ));
+        // Store the product.
+        $product = parent::storeEntity();
+
+        // Store the image, if there's one.
+        $picturePostedData = $this->getRequest()->getParameter('picture');
+        if ($picturePostedData) {
+            if (
+                $this->storeImage(
+                    $product->getId(),
+                    @$picturePostedData['tmp_name']
+                )
+            ) {
+                // Store the updated product.
+                $product->store();
+            }
         }
 
-        // Update the product from the request data.
-        $product->update($this->getEntityDataFromRequest());
-        // Store the image, if there's one.
-        $pictureData = $this->getRequest()->getParameter('picture');
-        $this->storeImage(
-            $product->getId(),
-            $pictureData['tmp_name']
-        );
-        // Store the updated product.
-        $product->store();
-
-        return $product->getFieldsData();
+        return $product;
     }
 
     /**
@@ -569,7 +527,7 @@ class ProductManager extends CollectionManager
             ));
             $image->store();
 
-            return TRUE;
+            return true;
         } else {
             // No picture found, so no updates performed.
             return FALSE;

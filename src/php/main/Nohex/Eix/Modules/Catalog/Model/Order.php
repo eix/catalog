@@ -26,7 +26,7 @@ class Order extends Entity
     const STATUS_DELIVERED = 'delivered';
     const STATUS_CLOSED = 'closed';
 
-    private static $statuses = array();
+    private static $statusLabels = array();
 
     protected $customer;
     protected $comments;
@@ -38,18 +38,6 @@ class Order extends Entity
 
     public function __construct(array $data, $isNew = true)
     {
-        // Set the correspondence between status codes and IDs.
-        self::$statuses = array(
-            self::STATUS_NEW => _('new'),
-            self::STATUS_CONFIRMED_BY_CUSTOMER => _('confirmed by customer'),
-            self::STATUS_CANCELLED_BY_CUSTOMER => _('cancelled by customer'),
-            self::STATUS_CONFIRMED_BY_VENDOR => _('confirmed by vendor'),
-            self::STATUS_CANCELLED_BY_VENDOR => _('cancelled by vendor'),
-            self::STATUS_READY => _('ready'),
-            self::STATUS_DELIVERED => _('delivered'),
-            self::STATUS_CLOSED => _('closed'),
-        );
-
         if (empty($data['id'])) {
             $data['id'] = strtoupper(hash('crc32b', uniqid()));
         }
@@ -85,6 +73,12 @@ class Order extends Entity
         // Create a security code if none is present.
         if (empty($data['securityCode']) && empty($this->securityCode)) {
             $data['securityCode'] = sprintf('%06d', mt_rand(000000, 999999));
+        }
+
+        // Record a status 
+        $newStatus = @$data['status'];
+        if ($newStatus) {
+            $this->setStatus($newStatus, true);
         }
 
         // Ensure the customer is the correct type.
@@ -176,21 +170,28 @@ class Order extends Entity
         }
     }
 
-    public function sendConfirmationRequestMessage()
-    {
-        $basketContents = join("\n", array_map(function ($item) {
+    /**
+     * Get a list of the contents of the basket.
+     * 
+     * @return string
+     */
+    private function getBasketContentsList() {
+        return join("\n", array_map(function ($item) {
             return sprintf('- %d × %s',
                     $item['count'],
                     $item['name']
             );
         }, $this->getBasket()->getContents()));
+    }
 
+    public function sendConfirmationRequestMessage()
+    {
         $this->sendMessage(
             $this->getCustomer()->email,
             'orderConfirmation',
             array(
                 'name' => $this->getCustomer()->name,
-                'basketContents' => $basketContents,
+                'basketContents' => $this->getBasketContentsList(),
                 'basketPrice' => sprintf('%1.2f', $this->getBasket()->getPrice()),
                 'orderId' => $this->id,
                 'securityCode' => $this->getSecurityCode(),
@@ -198,21 +199,32 @@ class Order extends Entity
         );
     }
 
-    public function sendAcceptanceMessage()
+    public function sendAcceptanceNotice()
     {
-        $basketContents = join("\n", array_map(function ($item) {
-            return utf8_decode(sprintf('- %d × %s',
-                    $item['count'],
-                    $item['name']
-            ));
-        }, $this->getBasket()->getContents()));
-
         $this->sendMessage(
             $this->getCustomer()->email,
-            'orderAccepted',
+            'orderAcceptance',
             array(
-                'basketContents' => $basketContents,
+                'name' => $this->getCustomer()->name,
+                'basketContents' => $this->getBasketContentsList(),
                 'orderId' => $this->id,
+            )
+        );
+    }
+
+    /**
+     * Sends the vendor the order status.
+     */
+    public function notifyVendor()
+    {
+        $mailSettings = Application::getSettings()->mail;
+
+        $this->sendMessage(
+            $mailSettings->sender->address,
+            'orderStatus',
+            array(
+                'orderId' => $this->id,
+                'status' => $this->getStatusLabel($this->getStatus()),
             )
         );
     }
@@ -225,9 +237,13 @@ class Order extends Entity
         $mailSettings = \Nohex\Eix\Core\Application::getSettings()->mail;
         $messageFile = @$mailSettings->templates->$templateId;
         if (!is_readable($messageFile)) {
-            throw new \Exception('No template found for the message.');
+            throw new \Exception(sprintf('Template not available: %s (%s).',
+                $messageFile,
+                $templateId
+            ));
         }
-        
+
+        // Replace values in the template.
         $message = str_replace(
             array_map(function ($item) {
                 return '{{' . $item . '}}';
@@ -243,34 +259,6 @@ class Order extends Entity
         );
         $mailMessage->setBody($message);
         $mailMessage->addRecipient($recipient);
-        $mailMessage->setSubject(sprintf(_('Order %s'), $this->id));
-
-        $mailMessage->send();
-    }
-
-    /**
-     * Sends the vendor the order status.
-     */
-    public function notifyVendor()
-    {
-        $mailSettings = Application::getSettings()->mail;
-        $messageFile = @$mailSettings->templates->orderStatus;
-        if (!is_readable($messageFile)) {
-            throw new \Exception('No template found for the vendor notification.');
-        }
-
-        $message = sprintf(file_get_contents($messageFile),
-            $this->id,
-            self::$statuses[$this->getStatus()]
-        );
-
-        $mailMessage = new MailMessage;
-        $mailMessage->setSender(
-            $mailSettings->sender->address,
-            $mailSettings->sender->name
-        );
-        $mailMessage->setBody($message);
-        $mailMessage->addRecipient($mailSettings->sender->address);
         $mailMessage->setSubject(sprintf(_('Order %s'), $this->id));
 
         $mailMessage->send();
@@ -329,12 +317,12 @@ class Order extends Entity
      */
     public function setStatus($newStatus, $notify = FALSE)
     {
-        // TODO: Implement a basic workflow control which allows setting
-        // only statuses that follow from the current one.
+        // TODO: Implement a basic workflow control which allows setting only
+        // statuses that follow from the current one.
 
         // Add the current status to the order's history.
         $previousStatus = $this->getStatus();
-        if ($previousStatus != $newStatus) {
+        if ($previousStatus && ($previousStatus != $newStatus)) {
             $this->statusHistory[] = array(
                 'id' => $newStatus,
                 'timestamp' => new \DateTime,
@@ -346,9 +334,38 @@ class Order extends Entity
             }
         }
     }
-
-    public static function getStatuses()
-    {
-        return self::$statuses;
+    
+    /**
+     * Get the textual representation of a status.
+     * 
+     * @param string $statusId
+     * @return string
+     */
+    public function getStatusLabel($statusId) {
+        return @self::$statusLabels[$statusId];
     }
+
+    /**
+     * Gets the textual representations of all statuses.
+     * 
+     * @return string[]
+     */
+    public static function getStatusLabels()
+    {
+        if (empty(self::$statusLabels)) {
+            // Set the correspondence between status codes and IDs.
+            self::$statusLabels = array(
+                self::STATUS_NEW => _('new'),
+                self::STATUS_CONFIRMED_BY_CUSTOMER => _('confirmed by customer'),
+                self::STATUS_CANCELLED_BY_CUSTOMER => _('cancelled by customer'),
+                self::STATUS_CONFIRMED_BY_VENDOR => _('confirmed by vendor'),
+                self::STATUS_CANCELLED_BY_VENDOR => _('cancelled by vendor'),
+                self::STATUS_READY => _('ready'),
+                self::STATUS_DELIVERED => _('delivered'),
+                self::STATUS_CLOSED => _('closed'),
+            );
+        }
+        return self::$statusLabels;
+    }
+
 }

@@ -2,10 +2,12 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
-use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
+use Nohex\Eix\Core\Request;
+use Nohex\Eix\Core\Responses\Http\Redirection as RedirectionResponse;
 use Nohex\Eix\Modules\Catalog\Model\Customers;
-use Nohex\Eix\Modules\Catalog\Model\Products;
 use Nohex\Eix\Modules\Catalog\Model\Order;
+use Nohex\Eix\Modules\Catalog\Model\Products;
+use Nohex\Eix\Services\Data\Responders\CollectionBrowser;
 use Nohex\Eix\Services\Data\Validators\Exception as ValidationException;
 use Nohex\Eix\Services\Log\Logger;
 use Nohex\Eix\Services\Net\Http\BadRequestException;
@@ -14,18 +16,13 @@ use Nohex\Eix\Services\Net\Http\NotFoundException;
 /**
  * Manages a customer's basket.
  */
-class BasketManager extends \Nohex\Eix\Core\Responders\Http
+class BasketManager extends CollectionBrowser
 {
-    public function httpGetForAll()
-    {
-        return $this->httpGetForHtml();
-    }
-
     /**
      * GET /cistella
      * @return \Nohex\Eix\Core\Responses\Http\Html
      */
-    protected function httpGetForHtml()
+    public function httpGetForHtml()
     {
         return $this->getViewPageResponse();
     }
@@ -95,10 +92,9 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
     /**
      * Provides the standard HTML response for the basket section.
      */
-    private function getHtmlResponse($templateId)
+    protected function getHtmlResponse()
     {
-        $response = new HtmlResponse($this->getRequest());
-        $response->setTemplateId($templateId);
+        $response = parent::getHtmlResponse();
         $response->appendToTitle(_('Basket'));
 
         return $response;
@@ -106,7 +102,8 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
 
     private function getViewPageResponse()
     {
-        $response = $this->getHtmlResponse('basket/view');
+        $response = $this->getHtmlResponse();
+        $response->setTemplateId('basket/view');
 
         // Force basket contents to update.
         Customers::getCurrent()->getBasket()->getContents();
@@ -118,12 +115,16 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
 
     private function getClearBasketResponse()
     {
-        return $this->getHtmlResponse('basket/clear');
+        $response = $this->getHtmlResponse();
+        $response->setTemplateId('basket/clear');
+
+        return $response;
     }
 
     private function getStartCheckoutResponse()
     {
-        $response = $this->getHtmlResponse('basket/checkout');
+        $response = $this->getHtmlResponse();
+        $response->setTemplateId('basket/checkout');
         $response->setData('customer', Customers::getCurrent()->getFieldsData());
         $response->setData('basket', Customers::getCurrent()->getBasket());
 
@@ -153,7 +154,8 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
             $response = new \Nohex\Eix\Core\Responses\Http\Redirection($this->getRequest());
             $response->setNextUrl("/comandes/{$order->id}");
         } catch (ValidationException $exception) {
-            $response = $this->getHtmlResponse('basket/checkout');
+            $response = $this->getHtmlResponse();
+            $response->setTemplateId('basket/checkout');
             $response->addErrorMessage(array(
                 'validation' => $exception->getValidationStatus(),
             ));
@@ -249,7 +251,7 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
         try {
             // Remove all products from the current customer's basket.
             Customers::getCurrent()->getBasket()->clear();
-            $response = new \Nohex\Eix\Core\Responses\Http\Redirection($this->getRequest());
+            $response = new RedirectionResponse($this->getRequest());
             $response->setNextUrl('/cistella');
         } catch (\Exception $exception) {
             $response = $this->getViewPageResponse();
@@ -261,5 +263,10 @@ class BasketManager extends \Nohex\Eix\Core\Responders\Http
         }
 
         return $response;
+    }
+
+    public function getDefaultFactory()
+    {
+        throw new Exception('The basket manager should not need an entity factory.');
     }
 }

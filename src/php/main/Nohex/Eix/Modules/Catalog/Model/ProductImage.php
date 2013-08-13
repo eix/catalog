@@ -20,7 +20,7 @@ class ProductImage extends Image
             96,
             140
         ));
-        
+
         return $dataSource;
     }
 

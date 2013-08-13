@@ -2,19 +2,19 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
-use Nohex\Eix\Core\Responders\Http as HttpResponder;
-use Nohex\Eix\Modules\Catalog\Model\Products;
 use Nohex\Eix\Modules\Catalog\Model\ProductGroups;
+use Nohex\Eix\Modules\Catalog\Model\Products;
 use Nohex\Eix\Modules\Catalog\Responses\Html as HtmlResponse;
-use Nohex\Eix\Services\Data\Factory;
+use Nohex\Eix\Services\Data\Responders\CollectionBrowser;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
 
 /**
  * Displays a product list.
  */
-class ProductViewer extends HttpResponder
+class ProductBrowser extends CollectionBrowser
 {
-    private static $factory;
+    const ITEM_NAME = 'product';
+    const COLLECTION_NAME = 'products';
 
     public function httpGetForAll()
     {
@@ -25,7 +25,7 @@ class ProductViewer extends HttpResponder
      * GET /products[/:id]
      * @return \Nohex\Eix\Core\Responses\Http\Html
      */
-    protected function httpGetForHtml()
+    public function httpGetForHtml()
     {
         $response = new HtmlResponse($this->getRequest());
         $id = $this->getRequest()->getParameter('id');
@@ -33,7 +33,6 @@ class ProductViewer extends HttpResponder
 
         switch ($id) {
             case NULL:
-                $productList = array();
                 if ($groupId) {
                     $group = ProductGroups::getInstance()->findEntity($groupId);
                     $response->setData('group', $group->name);
@@ -50,8 +49,8 @@ class ProductViewer extends HttpResponder
                 $response->appendToTitle(_('Productes'));
                 break;
             default:
-                $product = $this->getProduct($id);
                 $response->setTemplateId('products/view');
+                $product = $this->getForDisplay($id);
                 if ($product['enabled']) {
                     $response->setData('product', $product);
                     $response->appendToTitle(_($product['name']));
@@ -73,14 +72,14 @@ class ProductViewer extends HttpResponder
         // If disabled products are not meant to be included, include just the
         // enabled ones.
         if (!$includeDisabled) {
-            $options['enabled'] = TRUE;
+            $options['enabled'] = true;
         }
         if ($groupId) {
             // The matching should be done over 'groups._id', but because of how
             // products are being saved, this is the working form.
             $options["groups.{$groupId}._id"] = $groupId;
         }
-        $products = self::getFactory()->getAll($options);
+        $products = $this->getFactory()->getAll($options);
 
         $productList = array();
         if (!empty($products)) {
@@ -103,43 +102,8 @@ class ProductViewer extends HttpResponder
         return $productList;
     }
 
-    /**
-     * Get one product's data.
-     */
-    protected function getProduct($id)
-    {
-        return self::getFactory()->findEntity($id)->getForDisplay();
-    }
-
-    /**
-     * Get the default entity factory for that responder.
-     *
-     * @return Nohex\Eix\Services\Data\Factory
-     */
-    private static function getDefaultFactory()
+    public function getDefaultFactory()
     {
         return Products::getInstance();
-    }
-
-    /**
-     * Get the factory that provides this responder with entities.
-     */
-    public static function getFactory()
-    {
-        if (empty(self::$factory)) {
-            self::$factory = self::getDefaultFactory();
-        }
-
-        return self::$factory;
-    }
-
-    /**
-     * Set the factory that will provide this responder with entities.
-     *
-     * @param Nohex\Eix\Services\Data\Factory the entity factory to use.
-     */
-    public static function setFactory(Factory $factory)
-    {
-        self::$factory = $factory;
     }
 }

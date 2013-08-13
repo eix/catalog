@@ -3,18 +3,19 @@
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
 use Nohex\Eix\Modules\Catalog\Model\Products;
-use Nohex\Eix\Modules\Catalog\Responders\ProductViewer;
+use Nohex\Eix\Modules\Catalog\Responders\ProductBrowser;
+use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 
 /**
  * Displays a product list.
  */
-class FeaturedProductsViewer extends ProductViewer
+class FeaturedProductsBrowser extends ProductBrowser
 {
     /**
      * GET /products/featured
      * @return \Nohex\Eix\Core\Responses\Http\Html
      */
-    protected function httpGetForHtml()
+    public function httpGetForHtml()
     {
         $response = new HtmlResponse($this->getRequest());
 
@@ -40,8 +41,8 @@ class FeaturedProductsViewer extends ProductViewer
         // If disabled products are not meant to be included, include just the
         // enabled ones.
         $products = Products::getInstance()->getAll(array(
-            'featured' => TRUE,
-            'enabled' => TRUE,
+            'featured' => true,
+            'enabled' => true,
         ));
 
         $productList = array();
@@ -50,8 +51,8 @@ class FeaturedProductsViewer extends ProductViewer
             foreach ($products as $product) {
                 // Truncate the description if it is too long.
                 $description = $product->description;
-                if (strlen($description) > 450) {
-                    $description = substr($description, 0, 447) . '...';
+                if (strlen($description) > 150) {
+                    $description = substr($description, 0, 147) . '...';
                 }
                 $productList[] = array(
                     'id' => $product->id,
