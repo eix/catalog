@@ -1,7 +1,6 @@
 {
     "name": "nohex/catalog_eixtension",
     "description": "Eix extension that allows management of a catalog of products.",
-    "version": "0.4.0",
     "type": "library",
     "keywords": ["catalog", "e-commerce", "products"],
     "homepage": "http://eix.nohex.com/eixtensions/catalog",
