@@ -14,23 +14,23 @@ class ProductGroups extends ImmutableDataSource
         return array(
             array(
                 'id' => 'f',
-                'name' => _('Fruita'),
+                'name' => _('Fruit'),
             ),
             array(
                 'id' => 'v',
-                'name' => _('Verdura'),
+                'name' => _('Grocery'),
             ),
             array(
                 'id' => 'e',
-                'name' => _('Exòtics'),
+                'name' => _('Exotic'),
             ),
             array(
                 'id' => 'w',
-                'name' => _('Envasats'),
+                'name' => _('Packaged'),
             ),
             array(
                 'id' => 'p',
-                'name' => _('Proximitat'),
+                'name' => _('Proximity'),
             ),
         );
     }
