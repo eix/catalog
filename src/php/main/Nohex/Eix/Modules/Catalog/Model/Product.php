@@ -28,7 +28,13 @@ class Product extends Entity
             $this->groups = array();
             foreach ($data['groups'] as $key => $group) {
                 if (!($group instanceof ProductGroup)) {
-                    $productGroup = ProductGroups::getInstance()->findEntity($group['id']);
+                    $productGroup = ProductGroups::getInstance()->getEntity($group['id']);
+                    if (!$productGroup) {
+                        $productGroup = new ProductGroup(array(
+                            'id' => $group['id'],
+                            'name' => $group['name'],
+                        ));
+                    }
 
                     $group = $productGroup;
                 }
@@ -72,7 +78,6 @@ class Product extends Entity
             'description' => $this->description,
             'price' => $this->price,
             'enabled' => $this->enabled,
-            'groups' => $this->getGroups(),
         );
     }
 
