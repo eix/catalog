@@ -46,7 +46,7 @@ class ProductGroup extends Entity
     {
         return array(
             'id' => $this->id,
-            'name' => $this->name,
+            'name' => _($this->name),
         );
     }
 

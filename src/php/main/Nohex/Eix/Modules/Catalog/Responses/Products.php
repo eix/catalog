@@ -5,7 +5,9 @@ namespace Nohex\Eix\Modules\Catalog\Responses;
 /**
  * Provides means to respond to a contact request.
  */
-class Products extends \Nohex\Eix\Modules\Catalog\Responses\Html
+class _____Products extends \Nohex\Eix\Modules\Catalog\Responses\Html
+// If this class name does not end up in an error, the class is not being used
+// and can be deleted.
 {
     public function issue()
     {
@@ -23,26 +25,25 @@ class Products extends \Nohex\Eix\Modules\Catalog\Responses\Html
             }
         }
         $this->setData('products', $productList);
-
-        $title = 'Productes';
+        $title = _('Products');
         switch ($type) {
             case 'fruita':
-                $title = _('Fruita');
+                $title = _('Fruit');
                 break;
             case 'verdura':
-                $title = _('Verdura');
+                $title = _('Grocery');
                 break;
             case 'exotics':
-                $title = _('Exòtics');
+                $title = _('Exotic');
                 break;
             case 'envasats':
-                $title = _('Envasats');
+                $title = _('Packaged');
                 break;
             case 'proximitat':
-                $title = _('Proximitat');
+                $title = _('Proximity');
                 break;
         }
-        $this->setTitle(_('Productes') . ' — ' . _($title));
+        $this->setTitle(_('Products') . ' — ' . _($title));
 
         // Set the response.
         $this->setTemplateId('products/index');

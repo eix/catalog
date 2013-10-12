@@ -386,10 +386,10 @@ class ProductManager extends CollectionManager
                             $data = array(
                                 'id' => $id,
                                 'name' => $name,
-                                'description' => $description ?: _('(Sense descripció)'),
+                                'description' => $description ?: _('(No description)'),
                                 'price' => $price,
                                 'weight' => $weight,
-                                'presentation' => $presentation ?: _('Unitat'),
+                                'presentation' => $presentation ?: _('Unit'),
                             );
                             $product = NULL;
                             try {
