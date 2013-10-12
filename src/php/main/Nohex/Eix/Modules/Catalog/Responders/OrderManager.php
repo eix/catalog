@@ -10,6 +10,9 @@ use Nohex\Eix\Services\Data\Responders\CollectionManager;
 
 class OrderManager extends CollectionManager
 {
+    // Nulls values are not stored.
+    protected $nullsIgnoredOnStore = true;
+
     public function __construct(Request $request)
     {
         parent::__construct($request);

@@ -78,7 +78,10 @@ class Order extends Entity
         // Record a status 
         $newStatus = @$data['status'];
         if ($newStatus) {
-            $this->setStatus($newStatus, true);
+            // Update status, but only notify if genuinely changing it. If the
+            // current status is null, a new order object is just being
+            // populated.
+            $this->setStatus($newStatus, !is_null($this->status));
         }
 
         // Ensure the customer is the correct type.
@@ -294,6 +297,14 @@ class Order extends Entity
         return $this->securityCode;
     }
 
+    public function getAuthenticationCode() {
+        return md5(
+            $this->id
+            . $this->getCustomer()->getId()
+            . $this->securityCode
+        );
+    }
+
     /**
      * Returns the latest status in the history.
      */
@@ -322,7 +333,7 @@ class Order extends Entity
 
         // Add the current status to the order's history.
         $previousStatus = $this->getStatus();
-        if ($previousStatus && ($previousStatus != $newStatus)) {
+        if (!$previousStatus || ($previousStatus != $newStatus)) {
             $this->statusHistory[] = array(
                 'id' => $newStatus,
                 'timestamp' => new \DateTime,

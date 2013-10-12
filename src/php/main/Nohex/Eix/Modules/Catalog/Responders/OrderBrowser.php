@@ -2,10 +2,14 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
+use Nohex\Eix\Core\Responses\Http\Html;
+use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 use Nohex\Eix\Core\Responses\Http\Redirection;
-use Nohex\Eix\Services\Data\Responders\CollectionBrowser;
-use Nohex\Eix\Modules\Catalog\Model\Orders;
 use Nohex\Eix\Modules\Catalog\Model\Order;
+use Nohex\Eix\Modules\Catalog\Model\Orders;
+use Nohex\Eix\Services\Data\Responders\CollectionBrowser;
+use Nohex\Eix\Services\Net\Http\BadRequestException;
+use Nohex\Eix\Services\Net\Http\NotFoundException;
 
 class OrderBrowser extends CollectionBrowser
 {
@@ -20,9 +24,55 @@ class OrderBrowser extends CollectionBrowser
     }
 
     /**
+     * GET /{collection}[/:id]
+     * 
+     * The parent method is overriden to avoid 404ing on non-existent orders, in
+     * order to avoid entity enumeration by malicious users.
+     * 
+     * The order authentication request is always required, whether the order
+     * exists or not. The result of non-existent order or an incorrectly
+     * authenticated one is indistinguishable.
+     * 
+     * @return HtmlResponse
+     */
+    public function httpGetForHtml()
+    {
+        $id = $this->getRequest()->getParameter('id');
+        $authenticationCode = $this->getRequest()->getParameter('authenticationCode');
+        
+        $response = $this->getHtmlResponse();
+        $response->setTemplateId($this->getViewTemplateId());
+        // Add the identifier to the response.
+        $response->setData('order', ['id' => $id]);
+
+        // No authentication code found.
+        if ($authenticationCode) {
+            try {
+                $order = $this->getEntity($id);
+                if ($order && ($order->getAuthenticationCode() == $authenticationCode)) {
+                    $response = $this->getViewResponse($order);
+
+                    $response->setData('order', $order->getFieldsData());
+                    $response->appendToTitle(sprintf(
+                        _('%s %s'),
+                        ucfirst($this->getItemName()),
+                        $order->getId()
+                    ));
+                }
+            } catch (NotFoundException $exception) {
+                // Swallow it, no one needs to know which orders exist and which
+                // do not.
+            }
+        }
+
+
+        return $response;
+    }
+
+    /**
      * POST /orders[/:id]
      * POST /comandes[/:id]
-     * @return \Nohex\Eix\Core\Responses\Http\Html
+     * @return Html
      */
     public function httpPostForHtml()
     {
@@ -31,11 +81,11 @@ class OrderBrowser extends CollectionBrowser
 
         $response = NULL;
         switch ($operation) {
-            case 'confirm':
-                $response = $this->getConfirmationResponse($this->getEntity($id));
+            case 'authenticate':
+                $response = $this->getAuthenticationResponse($id);
                 break;
             case 'resend':
-                $order = $this->getOrder($id);
+                $order = $this->getEntity($id);
                 // Resend the confirmation.
                 $order->sendConfirmationRequest();
                 $response = new Redirection($this->getRequest());
@@ -49,36 +99,48 @@ class OrderBrowser extends CollectionBrowser
         return $response;
     }
 
-    private function getConfirmationResponse(Order $order)
+    private function getAuthenticationResponse($orderId)
     {
-        if ($order->getStatus() != Order::STATUS_NEW) {
-            throw new BadRequestException('This order has already been confirmed.');
+        $validationErrors = array();
+        
+        $order = null;
+        try {
+            $order = $this->getEntity($orderId);
+            $securityCode = $this->getRequest()->getParameter('security_code');
+            // Check that a security code is presented.
+            if (empty($securityCode)) {
+                $validationErrors[] = _('The security code is missing.');
+            } else {
+                // Check that the security code matches the expected one.
+                if ($order->securityCode != $securityCode) {
+                    $validationErrors[] = _('The security code is incorrect.');
+                }
+            }
+        } catch (NotFoundException $exception) {
+            // Same error for wrong codes and non-existing orders, to avoid
+            // enumeration.
+            $validationErrors[] = _('The security code is incorrect.');
         }
 
         $response = NULL;
-        $validationErrors = array();
-
-        $securityCode = $this->getRequest()->getParameter('security_code');
-
-        // Check that a security code is presented.
-        if (empty($securityCode)) {
-            $validationErrors[] = _('The security code is missing.');
-        } else {
-            // Check that the security code is presented.
-            if ($order->securityCode != $securityCode) {
-                $validationErrors[] = _('The security code is incorrect.');
-            }
-        }
 
         // If the validation status is empty, everything looks ok.
         if (empty($validationErrors)) {
-            // Set the status and notify the vendor.
-            $order->setStatus(Order::STATUS_CONFIRMED_BY_CUSTOMER, true);
-            // Store the order with the new status.
-            $order->store();
-            // Display the order's new status.
+            // If the order is new, this step just validated the customer's
+            // e-mail address.
+            if ($order->getStatus() == Order::STATUS_NEW) {
+                // Set the status and notify the vendor.
+                $order->setStatus(Order::STATUS_CONFIRMED_BY_CUSTOMER, true);
+                // Store the order with the new status.
+                $order->store();
+                // Display the order's new status.
+            }
+            // Redirect to the order view page with the authentication code.
             $response = new Redirection($this->getRequest());
-            $response->setNextUrl("/comandes/{$order->id}");
+            $response->setNextUrl(sprintf('/comandes/%s/%s',
+                $order->getId(),
+                $order->getAuthenticationCode()
+            ));
         } else {
             // Validation failed.
             $response = new HtmlResponse($this->getRequest());
@@ -86,7 +148,7 @@ class OrderBrowser extends CollectionBrowser
                 'security_code' => $validationErrors,
             )));
             $response->setTemplateId('orders/view');
-            $response->setData('order', $order->getFieldsData());
+            $response->setData('order', ['id' => $orderId]);
         }
 
         return $response;
