@@ -72,12 +72,18 @@ class Product extends Entity
 
     public function getForDisplay()
     {
+        $groupsForDisplay = array();
+        foreach ($this->groups as $group) {
+            $groupsForDisplay[$group->getId()] = $group->getForDisplay();
+        }
+
         return array(
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,
             'enabled' => $this->enabled,
+            'groups' => $groupsForDisplay,
         );
     }
 
