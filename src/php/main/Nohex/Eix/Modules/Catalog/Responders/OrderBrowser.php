@@ -42,7 +42,7 @@ class OrderBrowser extends CollectionBrowser
         $response = $this->getHtmlResponse();
         $response->setTemplateId($this->getViewTemplateId());
         // Add the identifier to the response.
-        $response->setData('order', ['id' => $id]);
+        $response->setData('order', array('id' => $id));
 
         // No authentication code found.
         if ($authenticationCode) {
@@ -152,7 +152,7 @@ class OrderBrowser extends CollectionBrowser
                 'security_code' => $validationErrors,
             )));
             $response->setTemplateId('orders/view');
-            $response->setData('order', ['id' => $orderId]);
+            $response->setData('order', array('id' => $orderId));
         }
 
         return $response;
