@@ -2,11 +2,10 @@
 
 namespace Nohex\Eix\Modules\Catalog\Responders;
 
-use Nohex\Eix\Core\Responses\Http\Html;
-use Nohex\Eix\Core\Responses\Http\Html as HtmlResponse;
 use Nohex\Eix\Core\Responses\Http\Redirection;
 use Nohex\Eix\Modules\Catalog\Model\Order;
 use Nohex\Eix\Modules\Catalog\Model\Orders;
+use Nohex\Eix\Modules\Catalog\Responses\Html as HtmlResponse;
 use Nohex\Eix\Services\Data\Responders\CollectionBrowser;
 use Nohex\Eix\Services\Net\Http\BadRequestException;
 use Nohex\Eix\Services\Net\Http\NotFoundException;
@@ -85,9 +84,14 @@ class OrderBrowser extends CollectionBrowser
                 $response = $this->getAuthenticationResponse($id);
                 break;
             case 'resend':
-                $order = $this->getEntity($id);
-                // Resend the confirmation.
-                $order->sendConfirmationRequest();
+                try {
+                    $order = $this->getEntity($id);
+                    // Resend the confirmation.
+                    $order->sendConfirmationRequest();
+                } catch (NotFoundException $exception) {
+                    // If the order was not found, just go ahead and pretend it
+                    // does, to avoid enumeration.
+                }
                 $response = new Redirection($this->getRequest());
                 $response->setNextUrl("/comandes/{$id}");
                 $response->addNotice(_('The confirmation e-mail has been resent.'));
