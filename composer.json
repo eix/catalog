@@ -18,7 +18,7 @@
         "source": "https://github.com/nohex/catalog_eixtension"
     },
     "require": {
-        "nohex/eix": "~0.4"
+        "nohex/eix": "0.4.*"
     },
     "autoload": {
         "psr-0": {
