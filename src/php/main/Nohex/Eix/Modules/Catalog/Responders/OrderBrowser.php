@@ -87,7 +87,7 @@ class OrderBrowser extends CollectionBrowser
                 try {
                     $order = $this->getEntity($id);
                     // Resend the confirmation.
-                    $order->sendConfirmationRequest();
+                    $order->sendConfirmationRequestMessage();
                 } catch (NotFoundException $exception) {
                     // If the order was not found, just go ahead and pretend it
                     // does, to avoid enumeration.
