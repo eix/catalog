@@ -1,7 +1,9 @@
+sudo: false
+
 language: php
 
 php:
-  - 5.3
+  - 7
 
 env:
   - EIX_ENV=TEST
