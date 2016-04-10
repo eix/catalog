@@ -1,35 +1,49 @@
 {
-    "name": "nohex/catalog_eixtension",
-    "description": "Eix extension that allows management of a catalog of products.",
-    "type": "library",
-    "keywords": ["catalog", "e-commerce", "products"],
-    "homepage": "http://eix.nohex.com/eixtensions/catalog",
-    "time": "2013-01-01",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Max Noé",
-            "email": "max@nohex.com",
-            "role": "Developer"
-        }
-    ],
-    "support": {
-        "issues": "https://github.com/nohex/catalog_eixtension",
-        "source": "https://github.com/nohex/catalog_eixtension"
-    },
-    "require": {
-        "nohex/eix": "~0.4"
-    },
-    "autoload": {
-        "psr-0": {
-            "Nohex\\": [
-				"src/php/main",
-				"src/php/test"
-			]
-        }
-    },
-    "prefer-stable": true,
-	"config": {
-		"vendor-dir": "src/php/lib"
-	}
+  "name": "eix/catalog",
+  "description": "Eixtension that allows management of a catalog of products.",
+  "type": "library",
+  "keywords": [
+    "catalog",
+    "e-commerce",
+    "products"
+  ],
+  "homepage": "http://github.com/eix/catalog",
+  "time": "2013-01-01",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Max Noé",
+      "email": "code@0h.io",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "source": "https://github.com/eix/catalog",
+    "issues": "https://github.com/eix/catalog/issues"
+  },
+  "require": {
+    "eix/core": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {
+      "Eix\\": "src/php/main"
+    }
+  },
+  "autoload-dev": {
+    "psr-0": {
+      "Eix": "src/php/test"
+    }
+  },
+  "prefer-stable": true,
+  "config": {
+    "vendor-dir": "src/php/lib"
+  },
+  "require-dev": {
+    "phing/phing": "*",
+    "phpunit/phpunit": "~5",
+    "phplint/phplint": "*",
+    "phploc/phploc": "*",
+    "sebastian/phpcpd": "*",
+    "mayflower/php-codebrowser": "*"
+  }
 }
